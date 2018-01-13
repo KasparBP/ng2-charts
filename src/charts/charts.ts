@@ -65,7 +65,7 @@ export class BaseChartDirective implements OnDestroy, OnChanges, OnInit {
   public ngOnChanges(changes: SimpleChanges): void {
     if (this.initFlag) {
       // Check if the changes are in the data or datasets
-      if (changes.hasOwnProperty('data') || changes.hasOwnProperty('datasets') || changes.hasOwnProperty('colors')) {
+      if (changes.hasOwnProperty('data') || changes.hasOwnProperty('datasets') || changes.hasOwnProperty('labels') || changes.hasOwnProperty('colors')) {
         if (changes['data']) {
           this.updateChartData(changes['data'].currentValue);
         } else if (changes['datasets']) {
@@ -82,6 +82,10 @@ export class BaseChartDirective implements OnDestroy, OnChanges, OnInit {
                 return newElm;
               }
             });
+        }
+
+        if (changes['labels']) {
+          this.chart.data.labels = changes["labels"].currentValue;
         }
 
         this.chart.update();
