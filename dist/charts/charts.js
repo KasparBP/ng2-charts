@@ -32,12 +32,18 @@ var BaseChartDirective = (function () {
         var _this = this;
         if (this.initFlag) {
             // Check if the changes are in the data or datasets
-            if (changes.hasOwnProperty('data') || changes.hasOwnProperty('datasets') || changes.hasOwnProperty('colors')) {
-                if (changes['data']) {
-                    this.updateChartData(changes['data'].currentValue);
+            if (changes.hasOwnProperty('data') || changes.hasOwnProperty('datasets') || changes.hasOwnProperty('labels') || changes.hasOwnProperty('colors')) {
+                //        if (changes['data']) {
+                //          this.updateChartData(changes['data'].currentValue);
+                //        } else if (changes['datasets']) {
+                //          this.updateChartData(changes['datasets'].currentValue);
+                //        }
+                var changeRequiresChartRefresh = false;
+                if (changes.hasOwnProperty('data') || changes.hasOwnProperty('datasets')) {
+                    this.chart.data.datasets = this.getDatasets();
                 }
-                else if (changes['datasets']) {
-                    this.updateChartData(changes['datasets'].currentValue);
+                if (changes['labels']) {
+                    this.chart.data.labels = changes["labels"].currentValue;
                 }
                 if (changes['colors']) {
                     this.chart.data.datasets = this.chart.data.datasets
@@ -49,7 +55,11 @@ var BaseChartDirective = (function () {
                         }
                     });
                 }
-                this.chart.update();
+                if (changes.hasOwnProperty('options')) {
+                    this.chart.options = this.options;
+                    changeRequiresChartRefresh = true;
+                }
+                changeRequiresChartRefresh ? this.refresh() : this.chart.update();
             }
             else {
                 // otherwise rebuild the chart
@@ -206,6 +216,30 @@ BaseChartDirective = __decorate([
     __metadata("design:paramtypes", [core_1.ElementRef])
 ], BaseChartDirective);
 exports.BaseChartDirective = BaseChartDirective;
+// private helper functions
+function isObject(item) {
+    return (item && typeof item === 'object' && !Array.isArray(item));
+}
+function mergeDeep(target, source) {
+    var output = Object.assign({}, target);
+    if (isObject(target) && isObject(source)) {
+        Object.keys(source).forEach(function (key) {
+            if (isObject(source[key])) {
+                if (!(key in target)) {
+                    Object.assign(output, (_a = {}, _a[key] = source[key], _a));
+                }
+                else {
+                    output[key] = mergeDeep(target[key], source[key]);
+                }
+            }
+            else {
+                Object.assign(output, (_b = {}, _b[key] = source[key], _b));
+            }
+            var _a, _b;
+        });
+    }
+    return output;
+}
 function rgba(colour, alpha) {
     return 'rgba(' + colour.concat(alpha).join(',') + ')';
 }
